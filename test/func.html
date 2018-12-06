@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>function</title>
+</head>
+<body>
+	<script>
+		var a = 123;
+		function change(){
+			if(a>100){
+				a--;
+				change();
+			}
+		}
+		change();
+		console.log(a);
+	</script>
+</body>
+</html>

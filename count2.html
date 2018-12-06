@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>count4</title>
+	<style>
+		.count>div{
+			display:inline-block;
+			width:40px;
+			height:40px;
+			line-height:40px;
+			text-align:center;
+			background-color:#ccc;
+			border:1px solid #000;
+			border-radius:6px;
+			moz-user-select: -moz-none; 
+			-moz-user-select: none; 
+			-o-user-select:none; 
+			-khtml-user-select:none; 
+			-webkit-user-select:none; 
+			-ms-user-select:none; 
+			user-select:none;
+
+		}
+		.header{
+			width:170px;
+
+		}
+		.header>input{
+			width:160px;
+			height:30px;
+			font-size:24px;
+		}
+		.count{
+			width:170px;
+		}
+		.count>button{
+			width:40px;
+			height:40px;
+			line-height:40px;
+			text-align:center;
+			font-size:20px;
+		}
+	</style>
+</head>
+<body>
+	<div id="countainer">
+		<div class="header">
+			
+		<input id="input" type="text" value="" name="result">
+		</div>
+		<div class="count"></div>
+		<div id="record">
+			
+		</div>
+	</div>
+	<script type="text/javascript" src="./jquery-3.0.0.min.js" ></script>
+	<script>
+		var htmlCountData = [1,2,3,'+',4,5,6,'-',7,8,9,'×',0,'.','=','÷','CE','(',')'];
+		var countInput="";
+		createHtml(htmlCountData,$("#countainer>.count"));
+
+
+		//count dom 节点
+		function createHtml(data,dom){
+			for(var i=0,len=data.length;i<len;i++){
+				
+				dom.append("<button>"+data[i]+"</button>");
+				
+			}
+		}
+
+		$("#countainer>.count").on("click",function(e){
+			var innerHTML = e.target.innerHTML;
+			if(innerHTML != "="){
+				
+				if(innerHTML == "CE"){
+					$(".header>input").val('');
+					countInput = "";
+				}else{
+					countInput+=innerHTML;
+					$(".header>input").val(countInput);
+				}
+			}else{
+					var input = $("input").val();
+					var result = getResult(toPostfixExpression(preInput(input)));
+
+					$("#record").append("<h3>"+input+" = "+result+"</h3>")
+
+					$(".header>input").val('');
+					countInput = "";
+
+				}
+
+		});
+
+		
+		var add = (a, b) =>{
+			    var c, d, e;
+			    try {
+			        c = a.toString().split(".")[1].length;
+			        // console.log(c);
+			    } catch (f) {
+			        c = 0;
+			    }
+			    try {
+			        d = b.toString().split(".")[1].length;
+			    } catch (f) {
+			        d = 0;
+			    }
+			    e = Math.pow(10, Math.max(c, d));
+			    return (mulity(a, e) + mulity(b, e)) / e;
+		};
+		var reduce=(a, b)=> {
+				
+			    var c, d, e;
+			    try {
+			        c = a.toString().split(".")[1].length;
+			    } catch (f) {
+			        c = 0;
+			    }
+			    try {
+			        d = b.toString().split(".")[1].length;
+			    } catch (f) {
+			        d = 0;
+			    }
+			    return e = Math.pow(10, Math.max(c, d)), (mulity(a, e) - mulity(b, e)) / e;
+		};
+		var mulity=(a, b)=> {
+			    var c = 0,
+			        d = a.toString(),
+			        e = b.toString();
+			    try {
+			        c += d.split(".")[1].length;
+			    } catch (f) {}
+			    try {
+			        c += e.split(".")[1].length;
+			    } catch (f) {}
+			    return Number(d.replace(".", "")) * Number(e.replace(".", "")) / Math.pow(10, c);
+		};
+		var division=(a, b)=> {
+			
+			    var c, d, e = 0,
+			        f = 0;
+			    try {
+			        e = a.toString().split(".")[1].length;
+			    } catch (g) {}
+			    try {
+			        f = b.toString().split(".")[1].length;
+			    } catch (g) {}
+			    return c = Number(a.toString().replace(".", "")), d = Number(b.toString().replace(".", "")), mulity(c / d, Math.pow(10, f - e));
+		}
+
+
+var input = "1+((2+3)×4)-5";
+var input = "2×4+1";
+var input = "20÷10+1";
+var input = "30÷3+10";
+var input = "(2+3)";
+		var postfixExpression = toPostfixExpression(preInput(input));
+		getResult(postfixExpression);
+
+		function preInput(input){
+			if(Object.prototype.toString.call(input) != "[object String]"){
+				return ;
+			}else{
+				var preResult = input.split("");
+				var result = [];
+				var isNumber =false;
+
+
+				for(var i=0,len=preResult.length;i<len;i++){
+
+						var typeChar = isNaN(preResult[i]);
+						if(!typeChar){
+							if(isNumber){
+								result[result.length-1] += preResult[i];
+							}else{
+								result.push(preResult[i]);
+								
+							}
+							isNumber=true;
+						}else{
+							result.push(preResult[i]);
+							isNumber=false;
+						} 
+				}
+				// console.log(result);
+				return result;
+			}
+		}
+		
+		function toPostfixExpression(input){
+
+		 	 var s1 = [];//数字
+		 	 var s2 = [];//运算符
+		 	 for(var i=0;i<input.length;i++){
+		 	 	
+		 	 	if(isNaN(input[i])){
+		 	 		var len = s2.length-1;
+
+		 	 	  	//处理括号
+		 	 	  	if(input[i] == ")"){
+		 	 	  		for(var j=len;j>=0;j--){
+
+		 	 	  			if(s2[j] =="("){
+		 	 	  				s2.pop();
+		 	 	  				break; 
+		 	 	  			}else{
+								s1.push(s2.pop()); 
+		 	 	  			}
+		 	 	  		}
+		 	 	  	};
+		 	 	  	if(input[i] == "+" || input[i] == "-"){
+		 	 	  		console.log(input[i]);
+		 	 	  		console.log(s2);
+		 	 	  		console.log(s1);
+						toPostfixExpressionAdd(input[i],s2,s1);
+		 	 	  		
+		 	 	  	};
+
+		 	 	  	if(input[i] == "×" || input[i] == "÷"){
+		 	 	  		toPostfixExpressionMul(input[i],s2,s1);
+		 	 	  		
+		 	 	  		
+		 	 	  	}
+		 	 	  	if(input[i] == "("){
+		 	 	  		s2.push(input[i]);
+		 	 	  	}
+
+		 	 	}else{
+		 	 	  	s1.push(input[i]);
+		 	 	}
+		 	 	// console.log(s1);
+		 	 	// console.log(s2);
+		 	 }
+
+		 	 s2 = s2.reverse();
+		 	 var result = s1.concat(s2);
+		 	 return result;
+		 }
+
+		 function getResult(arr){
+		 	 var s1 = [];
+		 	 for(var i=0;i<arr.length;i++){
+		 	 	if(isNaN(arr[i])){
+		 	 			var b = s1.shift();
+		 	 			var a = s1.shift();
+		 	 		switch(arr[i]){
+		 	 			case "+":
+		 	 				s1.unshift(add(a,b));
+		 	 			break;
+		 	 			case "-":
+		 	 				
+		 	 				s1.unshift(reduce(a,b));
+		 	 			break;
+		 	 			case "×":
+		 	 				
+
+		 	 				s1.unshift(mulity(a,b));
+		 	 			break;
+		 	 			case "÷":
+		 	 				
+		 	 				s1.unshift(division(a,b));
+		 	 			break;
+		 	 		}
+		 	 	}else{
+		 	 		s1.unshift(arr[i]);
+		 	 	}
+		 	 }
+		 	 console.log(s1[0]);
+		 	 return s1[0];
+		 }
+		 function toPostfixExpressionAdd(value,s2,s1){
+		 					console.log(arguments);
+		 					console.log(s2);
+		 	 	  			var len = s2.length;
+		 	 	  			if(len>0){
+								if(s2[len-1] == "+" || s2[len-1] == "-" || s2[len-1] == "×" || s2[len-1] == "÷"){
+									s1.push(s2.pop());
+									toPostfixExpressionAdd(value,s2,s1);
+			 	 	  			}else{
+			 	 	  				s2.push(value);
+			 	 	  			}
+		 	 	  			}else{
+		 	 	  				s2.push(value);
+		 	 	  			}
+		 	 	  		}
+
+		 function toPostfixExpressionMul(value,s2,s1){
+		 	 	  			var len = s2.length;
+		 	 	  			if(len>0){
+								if(s2[len-1] == "×" || s2[len-1] == "÷"){
+									s1.push(s2.pop());
+									toPostfixExpressionAdd(value,s2,s1);
+			 	 	  			}else{
+			 	 	  				s2.push(value);
+			 	 	  			}
+		 	 	  			}else{
+		 	 	  				s2.push(value);
+		 	 	  			}
+
+		 	 	  		}	 	  		
+
+	</script>
+</body>
+</html>
